@@ -1,0 +1,16 @@
+{
+  "name": "e2b-ecs-migration-session-manager",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "demo": "tsc && node --env-file=.env dist/demo.js"
+  },
+  "dependencies": {
+    "@e2b/code-interpreter": "^2.5.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.21",
+    "typescript": "^5.8.3"
+  }
+}
