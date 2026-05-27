@@ -38,7 +38,7 @@ const RESPONSES: Record<MockUserMessage, GeneratedCode> = {
   },
   'simulate memory failure': {
     language: 'python',
-    code: 'import resource\nresource.setrlimit(resource.RLIMIT_AS, (128_000_000, 128_000_000))\nbytearray(256_000_000)',
+    code: 'bytearray(2**63 - 1)',
   },
 }
 

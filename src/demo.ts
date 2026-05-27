@@ -17,7 +17,7 @@ async function main() {
 
   try {
     // Turn 1 creates a brand-new sandbox for conv-1.
-    console.log('Turn 1: Python in a new conversation')
+    printSection('Turn 1: Python in a new conversation')
     const turn1 = await session.execute('conv-1', toExecutionRequest(await mockGenerateCode('run a python loop')))
     console.log(`\nconv-1 sandbox: ${turn1.sandboxId}`)
     if (!turn1.ok || !turn1.sandboxId) {
@@ -30,7 +30,7 @@ async function main() {
 
     // Turn 2 uses the same conversationId, so the same sandbox is reused and
     // filesystem state from turn 1 is still visible.
-    console.log('\nTurn 2: Same conversation, same sandbox, filesystem state persists')
+    printSection('Turn 2: Same conversation, same sandbox, filesystem state persists')
     const turn2 = await session.execute('conv-1', toExecutionRequest(await mockGenerateCode('list sandbox files')))
     check(turn2.ok, 'turn 2 should execute successfully')
     check(turn2.sandboxId === turn1.sandboxId, 'conv-1 follow-up should reuse the same sandbox')
@@ -38,7 +38,7 @@ async function main() {
 
     // A different conversation gets a different sandbox. This demonstrates the
     // same isolation boundary they previously got from one ECS container per session.
-    console.log('\nTurn 3: Different conversation, different sandbox')
+    printSection('Turn 3: Different conversation, different sandbox')
     const turn3 = await session.execute('conv-2', toExecutionRequest(await mockGenerateCode('run javascript hello')))
     check(turn3.ok, 'turn 3 should execute successfully')
     check(Boolean(turn3.sandboxId), 'turn 3 should create a sandbox')
@@ -48,7 +48,7 @@ async function main() {
 
     // Bad generated code should return a failed execution result, not crash the
     // backend worker that is managing all user conversations.
-    console.log('\nTurn 4: Bad code returns a failed result instead of crashing the process')
+    printSection('Turn 4: Bad code returns a failed result instead of crashing the process')
     const bad = await session.execute('conv-1', toExecutionRequest(await mockGenerateCode('trigger a python error')))
     check(!bad.ok, 'bad generated code should fail')
     check(bad.errorType === 'execution_error', 'bad generated code should be classified as execution_error')
@@ -56,7 +56,7 @@ async function main() {
     console.log(`errorType: ${bad.errorType}`)
     console.log(`error: ${bad.error ?? bad.stderr}`)
 
-    console.log('\nTurn 5: Long-running code is classified as a timeout')
+    printSection('Turn 5: Long-running code is classified as a timeout')
     const timeout = await session.execute('conv-1', toExecutionRequest(await mockGenerateCode('run slow python code')))
     check(!timeout.ok, 'long-running code should fail')
     check(timeout.errorType === 'timeout', 'long-running code should be classified as timeout')
@@ -64,7 +64,7 @@ async function main() {
     console.log(`errorType: ${timeout.errorType}`)
     console.log(`error: ${timeout.error ?? timeout.stderr}`)
 
-    console.log('\nTurn 6: Memory failures are classified as out_of_memory')
+    printSection('Turn 6: Memory failures are classified as out_of_memory')
     const oom = await session.execute('conv-1', toExecutionRequest(await mockGenerateCode('simulate memory failure')))
     check(!oom.ok, 'memory failure should fail')
     check(oom.errorType === 'out_of_memory', 'memory failure should be classified as out_of_memory')
@@ -72,7 +72,7 @@ async function main() {
     console.log(`errorType: ${oom.errorType}`)
     console.log(`error: ${oom.error ?? oom.stderr}`)
 
-    console.log('\nSession summary')
+    printSection('Session summary')
     const summary = session.listSessions()
     console.table(summary)
 
@@ -87,9 +87,9 @@ async function main() {
     await session.disposeAll()
     check(session.listSessions().length === 0, 'disposeAll should remove all tracked sessions')
     if (lifecycleFailures.length === 0) {
-      console.log('\nLifecycle checks passed')
+      printSection('Lifecycle checks passed')
     } else {
-      console.log('\nLifecycle checks completed with failures')
+      printSection('Lifecycle checks completed with failures')
       for (const failure of lifecycleFailures) console.log(`- ${failure}`)
       process.exitCode = 1
     }
@@ -111,6 +111,10 @@ function check(condition: unknown, message: string): void {
   if (condition) return
   lifecycleFailures.push(message)
   console.warn(`Lifecycle check failed: ${message}`)
+}
+
+function printSection(title: string): void {
+  console.log(`\n---- ${title} ----`)
 }
 
 function toExecutionRequest(generated: GeneratedCode) {

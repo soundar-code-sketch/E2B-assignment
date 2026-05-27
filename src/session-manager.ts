@@ -200,12 +200,8 @@ export class SandboxSessionManager {
     filePath: string,
     stream: StreamBuffer
   ): Promise<CommandResult> {
-    const command = `cd ${shellQuote(this.conversationDir(session.conversationId))} && ${this.commandFor(
-      request.language,
-      filePath
-    )}`
-
-    return session.sandbox.commands.run(command, {
+    return session.sandbox.commands.run(this.commandFor(request.language, filePath), {
+      cwd: this.conversationDir(session.conversationId),
       timeoutMs: request.timeoutMs ?? this.commandTimeoutMs,
       onStdout: (data) => {
         stream.stdout += data
