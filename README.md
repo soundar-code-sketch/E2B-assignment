@@ -9,10 +9,10 @@ The execution runtime layer moves from ECS/Docker to E2B sandboxes.
 | Current ECS/Docker Flow        | E2B Equivalent                          |
 | ------------------------------ | --------------------------------------- |
 | Start ECS task/container       | `Sandbox.create({ timeoutMs })`         |
-| Store container/task ID        | `sandboxId`                       |
+| container/task ID              | `sandboxId`                             |
 | Reconnect to running container | `Sandbox.connect(sandboxId)`            |
 | Execute commands in container  | `sandbox.commands.run(...)`             |
-| Idle cleanup jobs              | `sandbox.setTimeout(...)` |
+| Idle cleanup jobs              | `sandbox.setTimeout(...)`               |
 | Stop container                 | `sandbox.kill()`                        |
 
 ## Updated Runtime Flow
@@ -28,7 +28,7 @@ The execution runtime layer moves from ECS/Docker to E2B sandboxes.
 
 # What Stays the Same
 
-No need to rewrite their app flow.
+No need to rewrite the app flow.
 
 The following remain unchanged:
 
@@ -38,7 +38,6 @@ The following remain unchanged:
 * Existing backend APIs
 * LLM/code-generation flow
 * Database and persistence layer
-* Existing stdout/stderr streaming patterns
 * Logging/observability conventions
 
 This migration only replaces the execution runtime layer.
@@ -47,19 +46,19 @@ This migration only replaces the execution runtime layer.
 
 # Recommended Migration Approach
 
-I would avoid a big cutover.
+I would recommend to avoid a big cutover.
 
 1. Implement E2B for select teams first
     
-    The first proof should validate:
+    The first proof should validate:( the major features you are looking for )
 
-        * sandbox reuse across conversation turns
-        * filesystem persistence within a session
-        * isolation across conversations
-        * stdout/stderr streaming
-        * graceful handling of bad code/timeouts
+      * sandbox reuse across conversation turns
+      * filesystem persistence within a session
+      * isolation across conversations
+      * stdout/stderr streaming
+      * graceful handling of bad code/timeouts
 
-2. Run ECS and E2B side-by-side behind a feature flag
+2. Run ECS and E2B side-by-side behind a feature flag 
 
 3. Compare:
 
@@ -98,11 +97,13 @@ I would avoid a big cutover.
    * network restrictions
    * audit/compliance requirements
 
+The info on these will help me guide through the migration
+
 ---
 
 # Dependency Handling in E2B
 
-I would split dependencies into three layers:
+I would split dependencies into two layers:
 
 | Dependency Type                          | Recommended Handling                 |
 | ---------------------------------------- | ------------------------------------ |
